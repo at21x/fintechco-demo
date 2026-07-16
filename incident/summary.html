@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Incident Summary — PAY-4471</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page:        #f9f9f7;
+    --surface:     #fcfcfb;
+    --text-1:      #0b0b0b;
+    --text-2:      #52514e;
+    --text-muted:  #898781;
+    --grid:        #e1e0d9;
+    --border:      rgba(11,11,11,0.10);
+    --good:        #0ca30c;
+    --good-bg:     #e6f5e6;
+    --tier-0:      #cde2fb;
+    --tier-1:      #9ec5f4;
+    --tier-2:      #6da7ec;
+    --tier-3:      #3987e5;
+    --tier-4:      #256abf;
+    --tier-5:      #0d366b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:        #0d0d0d;
+      --surface:     #1a1a19;
+      --text-1:      #ffffff;
+      --text-2:      #c3c2b7;
+      --text-muted:  #898781;
+      --grid:        #2c2c2a;
+      --border:      rgba(255,255,255,0.10);
+      --good:        #0ca30c;
+      --good-bg:     rgba(12,163,12,0.16);
+      --tier-0:      #86b6ef;
+      --tier-1:      #6da7ec;
+      --tier-2:      #5598e7;
+      --tier-3:      #3987e5;
+      --tier-4:      #2a78d6;
+      --tier-5:      #256abf;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:        #0d0d0d;
+    --surface:     #1a1a19;
+    --text-1:      #ffffff;
+    --text-2:      #c3c2b7;
+    --text-muted:  #898781;
+    --grid:        #2c2c2a;
+    --border:      rgba(255,255,255,0.10);
+    --good:        #0ca30c;
+    --good-bg:     rgba(12,163,12,0.16);
+    --tier-0:      #86b6ef;
+    --tier-1:      #6da7ec;
+    --tier-2:      #5598e7;
+    --tier-3:      #3987e5;
+    --tier-4:      #2a78d6;
+    --tier-5:      #256abf;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-1);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  body {
+    padding: 32px 16px 64px;
+  }
+  .card {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 36px 36px;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-size: 24px;
+    line-height: 1.3;
+    margin: 0 0 16px;
+  }
+
+  .badges {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+  .badge-status {
+    color: var(--good);
+    background: var(--good-bg);
+  }
+  .badge-status svg { width: 14px; height: 14px; }
+  .badge-sev {
+    color: var(--text-2);
+    background: transparent;
+    border: 1px solid var(--border);
+  }
+
+  p.summary {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-2);
+    margin: 0 0 32px;
+  }
+  p.summary strong { color: var(--text-1); }
+
+  h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 4px;
+  }
+  .chart-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 20px;
+  }
+
+  /* --- chart --- */
+  .chart-wrap { margin-bottom: 36px; }
+  .chart {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 160px;
+    padding-top: 28px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .baseline-line {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 10px;
+    height: 0;
+    border-top: 1px dashed var(--text-muted);
+  }
+  .baseline-label {
+    position: absolute;
+    right: 0;
+    bottom: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding-left: 6px;
+  }
+  .col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    position: relative;
+  }
+  .val {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+  .bar {
+    width: 100%;
+    max-width: 26px;
+    border-radius: 3px 3px 0 0;
+    background: var(--bar-color);
+    transition: opacity 0.15s ease;
+  }
+  .col:hover .bar { opacity: 0.75; }
+  .time {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .callout {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--tier-5);
+    white-space: nowrap;
+  }
+
+  /* --- resolution --- */
+  .res-list {
+    list-style: none;
+    margin: 0 0 28px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .res-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .res-list li strong { color: var(--text-1); font-weight: 600; }
+  .check {
+    flex: none;
+    width: 18px; height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: var(--good-bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .check svg { width: 10px; height: 10px; }
+  .pending {
+    flex: none;
+    width: 18px; height: 18px;
+    margin-top: 1px;
+    border-radius: 50%;
+    border: 1.5px solid var(--text-muted);
+  }
+
+  footer {
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--grid);
+    padding-top: 16px;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <p class="eyebrow">Incident PAY-4471</p>
+    <h1>Payment processing briefly rejected valid Yen &amp; Dinar payments</h1>
+
+    <div class="badges">
+      <span class="badge badge-status">
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M6 10.2l2.5 2.5L14 7.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Resolved
+      </span>
+      <span class="badge badge-sev">Severity: SEV-2</span>
+    </div>
+
+    <p class="summary">
+      For about 24 minutes on the night of <strong>July&nbsp;15–16, 2026</strong>, a
+      software bug caused the payment system to miscalculate amounts for two
+      currencies — Japanese Yen and Bahraini Dinar. Legitimate Yen payments
+      were wrongly flagged as fraud, and Dinar payments failed to reconcile.
+      At the worst point, roughly <strong>1 in 3 payments</strong> in the
+      affected window failed. <strong>No customer funds were lost</strong> —
+      every affected payment was held or rejected, never mis-settled.
+      On-call engineers were paged automatically, found the cause, and
+      restored normal processing within 14 minutes; a permanent fix shipped
+      the next day.
+    </p>
+
+    <div class="chart-wrap">
+      <h2>Error rate during the incident</h2>
+      <p class="chart-sub">Share of payments failing, per minute (UTC) — baseline is normally ~1%</p>
+      <div class="chart">
+        <div class="baseline-line"></div>
+        <span class="baseline-label">baseline</span>
+
+        <div class="col" title="23:40 UTC — 0.5% (normal)">
+          <span class="val">0.5%</span>
+          <div class="bar" style="--bar-color: var(--tier-0); height: 4%;"></div>
+          <span class="time">23:40</span>
+        </div>
+        <div class="col" title="23:44 UTC — 2.0% (bug begins)">
+          <span class="val">2.0%</span>
+          <div class="bar" style="--bar-color: var(--tier-1); height: 8%;"></div>
+          <span class="time">23:44</span>
+        </div>
+        <div class="col" title="23:48 UTC — 4.5%">
+          <span class="val">4.5%</span>
+          <div class="bar" style="--bar-color: var(--tier-1); height: 15%;"></div>
+          <span class="time">23:48</span>
+        </div>
+        <div class="col" title="23:52 UTC — 14.9% — PagerDuty auto-paged on-call">
+          <span class="callout">Paged</span>
+          <span class="val">14.9%</span>
+          <div class="bar" style="--bar-color: var(--tier-3); height: 47%;"></div>
+          <span class="time">23:52</span>
+        </div>
+        <div class="col" title="23:56 UTC — 25.6%">
+          <span class="val">25.6%</span>
+          <div class="bar" style="--bar-color: var(--tier-4); height: 81%;"></div>
+          <span class="time">23:56</span>
+        </div>
+        <div class="col" title="00:01 UTC — 33.1% — peak error rate">
+          <span class="callout">Peak</span>
+          <span class="val">33.1%</span>
+          <div class="bar" style="--bar-color: var(--tier-5); height: 100%;"></div>
+          <span class="time">00:01</span>
+        </div>
+        <div class="col" title="00:04 UTC — 28.6%">
+          <span class="val">28.6%</span>
+          <div class="bar" style="--bar-color: var(--tier-4); height: 91%;"></div>
+          <span class="time">00:04</span>
+        </div>
+        <div class="col" title="00:06 UTC — 21.7% — manual-review fix applied">
+          <span class="callout">Mitigated</span>
+          <span class="val">21.7%</span>
+          <div class="bar" style="--bar-color: var(--tier-3); height: 69%;"></div>
+          <span class="time">00:06</span>
+        </div>
+        <div class="col" title="00:08 UTC — 9.4%">
+          <span class="val">9.4%</span>
+          <div class="bar" style="--bar-color: var(--tier-2); height: 30%;"></div>
+          <span class="time">00:08</span>
+        </div>
+        <div class="col" title="00:11 UTC — 1.1% (back to baseline)">
+          <span class="val">1.1%</span>
+          <div class="bar" style="--bar-color: var(--tier-0); height: 5%;"></div>
+          <span class="time">00:11</span>
+        </div>
+        <div class="col" title="00:16 UTC — 0.4% (steady)">
+          <span class="val">0.4%</span>
+          <div class="bar" style="--bar-color: var(--tier-0); height: 3%;"></div>
+          <span class="time">00:16</span>
+        </div>
+      </div>
+    </div>
+
+    <h2>Resolution</h2>
+    <ul class="res-list">
+      <li>
+        <span class="check"><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10.2l3.2 3.2L16 5" stroke="#0ca30c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span><strong>Mitigated same night</strong> — error rate back under 5% within 14 minutes of paging, and fully back to baseline (~1%) by 00:11 UTC.</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10.2l3.2 3.2L16 5" stroke="#0ca30c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span><strong>Permanent fix shipped the next day</strong> — the root cause was corrected and new automated tests were added to prevent recurrence.</span>
+      </li>
+      <li>
+        <span class="check"><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 10.2l3.2 3.2L16 5" stroke="#0ca30c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span><strong>No funds lost</strong> — every affected payment was held or rejected, never mis-settled.</span>
+      </li>
+      <li>
+        <span class="pending"></span>
+        <span><strong>Follow-up work in progress</strong> — resuming normal automated processing for the two affected currencies, and auditing other code for the same class of bug.</span>
+      </li>
+    </ul>
+
+    <footer>Incident PAY-4471 &middot; payment_service &middot; July 15–16, 2026 &middot; Prepared from the engineering postmortem</footer>
+  </div>
+</body>
+</html>
