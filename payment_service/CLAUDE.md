@@ -1,8 +1,9 @@
 # payment_service
 
-A small simulated payments validation microservice for a fictional fintech
-company. This is a demo/sample project, not a production service — there's
-no real web server, database, or external payment processor wired up.
+A small simulated payments validation microservice built as a FinTech demo
+to test Claude Code's capabilities. This is a demo/sample project, not a
+production service — there's no real web server, database, or external
+payment processor wired up.
 
 ## Layout
 
