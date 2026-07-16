@@ -62,7 +62,8 @@ def to_minor_units(amount: Decimal, currency: str) -> int:
     """Convert a major-unit decimal amount (e.g. dollars) into its integer
     minor-unit representation (e.g. cents) for the given currency.
     """
-    return int(amount * 100)
+    exponent = CURRENCY_MINOR_UNIT_EXPONENT[currency]
+    return int(amount * (10 ** exponent))
 
 
 def validate_payment(payload: dict) -> dict:
