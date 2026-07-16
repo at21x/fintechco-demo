@@ -1,0 +1,75 @@
+Incident PAY-4471 -- captured tracebacks from downstream consumers of
+payment_service's validate_payment() output during the 2026-07-15 23:44 UTC
+through 2026-07-16 00:08 UTC window.
+
+Both tracebacks below originate from the same root cause: `to_minor_units()`
+in payment_service/payment_service/validation.py:65 hardcodes a x100 scale
+factor instead of scaling by
+`10 ** CURRENCY_MINOR_UNIT_EXPONENT[currency]`. payment_service itself
+returns normally in both cases -- the bad value it produces only blows up
+once a downstream service compares it against an independently-computed
+figure.
+
+================================================================================
+[1] fraud_engine -- false-positive fraud rejection on a legitimate JPY payment
+================================================================================
+
+Traceback (most recent call last):
+  File "services/fraud_engine/worker.py", line 61, in process_payment_event
+    decision = threshold.evaluate(event)
+  File "services/fraud_engine/threshold.py", line 34, in evaluate
+    raise FraudThresholdExceededError(
+services.fraud_engine.threshold.FraudThresholdExceededError: currency=JPY amount_minor_units=50000000 exceeds threshold_minor_units=1000000 (txn=txn_jpy_1752623052201, req_id=req_1752623052_88233)
+
+The upstream call into payment_service, for reference:
+
+  File "payment_service/payment_service/api.py", line 21, in handle_payment_request
+    validated = validate_payment(payload)
+  File "payment_service/payment_service/validation.py", line 81, in validate_payment
+    minor_units = to_minor_units(amount, currency)
+  File "payment_service/payment_service/validation.py", line 65, in to_minor_units
+    return int(amount * 100)
+
+Root cause: payload was {"currency": "JPY", "amount": "500000"}. JPY has a
+minor-unit exponent of 0 (no subunit -- 1 JPY *is* 1 minor unit), so the
+correct amount_minor_units is 500000. The hardcoded *100 instead produced
+50000000, a 100x inflation. fraud_engine.threshold compared that inflated
+figure against its per-currency ceiling (1,000,000 minor units, i.e.
+JPY 1,000,000) and rejected an entirely legitimate JPY 500,000 payment as
+suspected fraud.
+
+================================================================================
+[2] ledger_reconciliation -- settlement amount mismatch on a legitimate BHD payment
+================================================================================
+
+Traceback (most recent call last):
+  File "services/ledger_reconciliation/reconcile.py", line 118, in reconcile_batch
+    _assert_amounts_match(record, merchant_report)
+  File "services/ledger_reconciliation/reconcile.py", line 147, in _assert_amounts_match
+    raise AmountMismatchError(
+services.ledger_reconciliation.reconcile.AmountMismatchError: currency=BHD expected_minor_units=1250000 received_minor_units=125000 (txn=txn_bhd_1752623190003, req_id=req_1752623190_88234)
+
+The upstream call into payment_service, for reference:
+
+  File "payment_service/payment_service/api.py", line 21, in handle_payment_request
+    validated = validate_payment(payload)
+  File "payment_service/payment_service/validation.py", line 81, in validate_payment
+    minor_units = to_minor_units(amount, currency)
+  File "payment_service/payment_service/validation.py", line 65, in to_minor_units
+    return int(amount * 100)
+
+Root cause: payload was {"currency": "BHD", "amount": "1250.000"}. BHD has a
+minor-unit exponent of 3 (1 BHD = 1000 fils), so the correct
+amount_minor_units is 1250000. The hardcoded *100 instead produced 125000,
+a 10x understatement. ledger_reconciliation compared that undercounted
+figure against the merchant-reported settlement amount (computed correctly
+by the merchant's own system) and flagged a mismatch, halting settlement
+for the batch containing this transaction.
+
+--------------------------------------------------------------------------------
+Note: payment_service/payment_service/legacy_utils.py's retry() wrapper
+(attempts=3, no backoff) is used by the fraud_engine submission path, which
+is why some requests show three rapid identical failures before the
+exception in [1] is finally re-raised to the caller -- see
+"retry() exhausted 3 attempts, re-raising last exception" in error.log at
+23:55:11 UTC.

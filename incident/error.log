@@ -1,0 +1,35 @@
+2026-07-15 23:41:03,102 UTC INFO  payment_service.api [req_1752622863_88231] currency=USD amount=42.50 amount_minor_units=4250 status=ok
+2026-07-15 23:42:47,559 UTC INFO  payment_service.api [req_1752622967_88232] currency=EUR amount=19.99 amount_minor_units=1999 status=ok
+2026-07-15 23:44:12,884 UTC INFO  payment_service.api [req_1752623052_88233] currency=JPY amount=500000 amount_minor_units=50000000 status=ok
+2026-07-15 23:44:13,201 UTC ERROR fraud_engine.threshold [req_1752623052_88233] currency=JPY amount_minor_units=50000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623052201
+2026-07-15 23:46:30,417 UTC INFO  payment_service.api [req_1752623190_88234] currency=BHD amount=1250.000 amount_minor_units=125000 status=ok
+2026-07-15 23:46:31,003 UTC ERROR ledger_reconciliation.reconcile [req_1752623190_88234] currency=BHD expected_minor_units=1250000 received_minor_units=125000 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752623190003
+2026-07-15 23:47:12,348 UTC ERROR fraud_engine.threshold [req_1752623232_88235] currency=JPY amount_minor_units=32000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623232348
+2026-07-15 23:47:58,772 UTC WARNING payment_service.api elevated_error_rate=4.5pct window=1m
+2026-07-15 23:48:44,913 UTC ERROR ledger_reconciliation.reconcile [req_1752623324_88236] currency=BHD expected_minor_units=875000 received_minor_units=87500 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752623324913
+2026-07-15 23:49:20,206 UTC ERROR fraud_engine.threshold [req_1752623360_88237] currency=JPY amount_minor_units=128000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623360206
+2026-07-15 23:50:05,441 UTC WARNING payment_service.api elevated_error_rate=8.9pct window=1m
+2026-07-15 23:50:47,668 UTC ERROR ledger_reconciliation.reconcile [req_1752623447_88238] currency=BHD expected_minor_units=2000000 received_minor_units=200000 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752623447668
+2026-07-15 23:51:33,904 UTC ERROR fraud_engine.threshold [req_1752623493_88239] currency=JPY amount_minor_units=75000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623493904
+2026-07-15 23:52:19,225 UTC CRITICAL alerting.pagerduty incident_opened=true service=payment-service rule="error_rate > 15pct for 5m" current_error_rate=19.6pct
+2026-07-15 23:52:19,401 UTC INFO  alerting.pagerduty oncall_paged=true escalation_policy="payments-oncall" ack_deadline=300s
+2026-07-15 23:53:02,117 UTC ERROR fraud_engine.threshold [req_1752623582_88240] currency=JPY amount_minor_units=210000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623582117
+2026-07-15 23:53:40,558 UTC ERROR ledger_reconciliation.reconcile [req_1752623620_88241] currency=BHD expected_minor_units=540000 received_minor_units=54000 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752623620558
+2026-07-15 23:54:26,890 UTC ERROR fraud_engine.threshold [req_1752623666_88242] currency=JPY amount_minor_units=99000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623666890
+2026-07-15 23:55:11,033 UTC WARNING payment_service.legacy_utils [req_1752623711_88243] msg="retry() exhausted 3 attempts, re-raising last exception" fn=submit_to_fraud_engine
+2026-07-15 23:55:11,205 UTC ERROR fraud_engine.threshold [req_1752623711_88243] currency=JPY amount_minor_units=64000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623711205
+2026-07-15 23:56:48,371 UTC ERROR ledger_reconciliation.reconcile [req_1752623808_88244] currency=BHD expected_minor_units=3125000 received_minor_units=312500 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752623808371
+2026-07-15 23:57:33,602 UTC CRITICAL payment_service.api error_rate=28.3pct window=1m msg="sustained elevated error rate, oncall investigating"
+2026-07-15 23:58:04,884 UTC INFO  oncall.investigation engineer=on-call-primary msg="paged in, triaging payment-service alert"
+2026-07-15 23:59:15,219 UTC ERROR fraud_engine.threshold [req_1752623955_88245] currency=JPY amount_minor_units=180000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752623955219
+2026-07-15 23:59:52,447 UTC ERROR ledger_reconciliation.reconcile [req_1752623992_88246] currency=BHD expected_minor_units=990000 received_minor_units=99000 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752623992447
+2026-07-16 00:00:38,660 UTC CRITICAL payment_service.api error_rate=33.1pct window=1m msg="peak error rate observed"
+2026-07-16 00:01:20,905 UTC INFO  oncall.investigation engineer=on-call-primary msg="all failing transactions isolated to currency in {JPY, BHD}; pattern points at to_minor_units scaling"
+2026-07-16 00:02:47,332 UTC ERROR fraud_engine.threshold [req_1752624167_88247] currency=JPY amount_minor_units=45000000 threshold_minor_units=1000000 msg="fraud threshold exceeded, auto-rejecting payment" txn=txn_jpy_1752624167332
+2026-07-16 00:03:29,571 UTC ERROR ledger_reconciliation.reconcile [req_1752624209_88248] currency=BHD expected_minor_units=1600000 received_minor_units=160000 msg="amount mismatch vs merchant-reported settlement value" txn=txn_bhd_1752624209571
+2026-07-16 00:04:33,809 UTC INFO  oncall.investigation engineer=on-call-primary msg="root cause suspected in payment_service.validation.to_minor_units -- hardcoded *100 scale ignores per-currency minor unit exponent"
+2026-07-16 00:05:41,116 UTC INFO  oncall.mitigation action="feature-flag disable_auto_processing" currencies=[JPY,BHD] msg="routing JPY/BHD payments to manual review queue as stopgap; code fix deferred to follow-up ticket PAY-4471"
+2026-07-16 00:06:18,447 UTC INFO  payment_service.api error_rate=21.7pct window=1m msg="error rate beginning to recede after mitigation rollout"
+2026-07-16 00:07:39,802 UTC INFO  payment_service.api error_rate=9.4pct window=1m msg="error rate continuing to recover"
+2026-07-16 00:08:52,014 UTC INFO  alerting.pagerduty incident_status=mitigated msg="error rate back under 5pct threshold, monitoring for recurrence"
+2026-07-16 00:11:03,558 UTC INFO  payment_service.api error_rate=1.1pct window=1m msg="error rate at baseline"
