@@ -51,3 +51,17 @@ def test_parse_amount_rejects_amount_over_max():
 
 def test_to_minor_units_converts_dollars_to_cents():
     assert to_minor_units(Decimal("5.00"), "USD") == 500
+
+
+def test_to_minor_units_zero_decimal_currency():
+    assert to_minor_units(Decimal("500000"), "JPY") == 500000
+
+
+def test_to_minor_units_three_decimal_currency():
+    assert to_minor_units(Decimal("1250.000"), "BHD") == 1250000
+
+
+def test_to_minor_units_regression_pay_4471():
+    # Incident PAY-4471: hardcoded *100 inflated JPY 100x and understated BHD 10x
+    assert to_minor_units(Decimal("500000"), "JPY") == 500000
+    assert to_minor_units(Decimal("1250.000"), "BHD") == 1250000
